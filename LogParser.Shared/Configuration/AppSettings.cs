@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace LogParser.Shared.Configuration
+﻿namespace LogParser.Shared.Configuration
 {
-    internal class AppSettings
+    public class AppSettings
     {
+        public LogParserSettings LogParserSettings { get; set; } = new LogParserSettings();
     }
 }
