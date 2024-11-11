@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using LogParser.Shared.Models;
 
 namespace LogParser.Shared.Utilities
 {
-    internal class IQueryParser
+    public interface IQueryParser
     {
+        Func<LogEntry, bool> Parse(string query);
     }
 }

@@ -1,12 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using LogParser.Shared.Models;
 
 namespace LogParser.Shared.Utilities
 {
-    internal class QueryParser
+    public class QueryParser : IQueryParser
     {
+        public Func<LogEntry, bool> Parse(string query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+                throw new ArgumentException("Query cannot be null or empty.", nameof(query));
+
+            return log =>
+            {
+                var logs = new[] { log }.AsQueryable();
+                return logs.Where(query).Any();
+            };
+        }
     }
 }
