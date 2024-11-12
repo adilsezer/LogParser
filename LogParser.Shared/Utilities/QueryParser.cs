@@ -1,19 +1,54 @@
-﻿using LogParser.Shared.Models;
+﻿
+using System.Text.RegularExpressions;
 
 namespace LogParser.Shared.Utilities
 {
-    public class QueryParser : IQueryParser
+    public class QueryParser
     {
-        public Func<LogEntry, bool> Parse(string query)
-        {
-            if (string.IsNullOrWhiteSpace(query))
-                throw new ArgumentException("Query cannot be null or empty.", nameof(query));
+        public List<(string Column, string Operator, string Value, bool IsNot)> Conditions { get; set; }
 
-            return log =>
+        public List<string> LogicalOperators { get; set; }
+
+        public QueryParser(string query)
+        {
+            Conditions = new List<(string, string, string, bool)>();
+            LogicalOperators = new List<string>();
+
+            ParseQuery(query);
+        }
+
+        private void ParseQuery(string query)
+        {
+            if (query.Contains("(") || query.Contains(")"))
             {
-                var logs = new[] { log }.AsQueryable();
-                return logs.Where(query).Any();
-            };
+                throw new ArgumentException("Parenthesis are not supported. Please adjust your query and try again.");
+            }
+
+            var conditionPattern = @"(?<Column>\w+)\s*(?<Operator>=|!=)\s*'(?<Value>[^']*)'";
+            var logicalOperatorPattern = @"\s*(AND|OR)\s*";
+
+            var conditionMatches = Regex.Matches(query, conditionPattern);
+            var logicalOperatorMatches = Regex.Matches(query, logicalOperatorPattern);
+
+            foreach (Match match in conditionMatches)
+            {
+                var column = match.Groups["Column"].Value;
+                var op = match.Groups["Operator"].Value;
+                var value = match.Groups["Value"].Value;
+                var isNot = op == "!=";
+
+                Conditions.Add((column, op, value, isNot));
+            }
+
+            foreach (Match match in logicalOperatorMatches)
+            {
+                LogicalOperators.Add(match.Value.Trim());
+            }
+
+            if (Conditions.Count - 1 != LogicalOperators.Count)
+            {
+                throw new ArgumentException("Invalid query format");
+            }
         }
     }
 }

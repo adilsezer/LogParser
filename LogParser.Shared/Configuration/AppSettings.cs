@@ -2,6 +2,7 @@
 {
     public class AppSettings
     {
-        public LogParserSettings LogParserSettings { get; set; } = new LogParserSettings();
+        public string DefaultFilePath { get; set; } = string.Empty;
+        public int SeverityThreshold { get; set; } = 3;
     }
 }
