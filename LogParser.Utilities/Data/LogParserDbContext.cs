@@ -6,7 +6,7 @@ namespace LogParser.Utilities.Data
 {
     public class LogParserDbContext : DbContext
     {
-        public DbSet<CsvRecord> CsvRecords { get; set; }
+        public DbSet<CsvLog> CsvLogs { get; set; }
 
         public LogParserDbContext(DbContextOptions<LogParserDbContext> options)
             : base(options)
@@ -15,7 +15,7 @@ namespace LogParser.Utilities.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<CsvRecord>(entity =>
+            modelBuilder.Entity<CsvLog>(entity =>
             {
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Fields)

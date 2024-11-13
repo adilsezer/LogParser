@@ -12,7 +12,7 @@ namespace LogParser.Tests.Services
         }
 
         [Fact]
-        public void ParseCsv_ValidCsvFile_ReturnsRecords()
+        public void ParseCsv_ValidCsvFile_ReturnsLogs()
         {
             var csvContent = "Id,Name\n1,Test\n2,Example";
             File.WriteAllText(_testFilePath, csvContent);
@@ -21,16 +21,16 @@ namespace LogParser.Tests.Services
             var result = parser.ParseCsv(_testFilePath);
 
             Assert.NotNull(result);
-            var records = result.ToList();
-            Assert.Equal(2, records.Count);
+            var logs = result.ToList();
+            Assert.Equal(2, logs.Count);
 
-            Assert.NotNull(records[0]);
-            Assert.Equal("1", records[0].Fields["Id"].ToString());
-            Assert.Equal("Test", records[0].Fields["Name"].ToString());
+            Assert.NotNull(logs[0]);
+            Assert.Equal("1", logs[0].Fields["Id"].ToString());
+            Assert.Equal("Test", logs[0].Fields["Name"].ToString());
 
-            Assert.NotNull(records[1]);
-            Assert.Equal("2", records[1].Fields["Id"].ToString());
-            Assert.Equal("Example", records[1].Fields["Name"].ToString());
+            Assert.NotNull(logs[1]);
+            Assert.Equal("2", logs[1].Fields["Id"].ToString());
+            Assert.Equal("Example", logs[1].Fields["Name"].ToString());
         }
 
         [Fact]

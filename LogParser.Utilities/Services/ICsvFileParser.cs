@@ -4,6 +4,6 @@ namespace LogParser.Utilities.Services
 {
     public interface ICsvFileParser
     {
-        IEnumerable<CsvRecord> ParseCsv(string filePath);
+        IEnumerable<CsvLog> ParseCsv(string filePath);
     }
 }

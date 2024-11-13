@@ -15,6 +15,9 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="LogFiles\logs2.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="LogFiles\logs.csv">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

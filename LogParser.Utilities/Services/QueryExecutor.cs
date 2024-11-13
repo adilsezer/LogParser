@@ -28,7 +28,7 @@ namespace LogParser.Utilities.Services
             }
 
             var queryParser = new QueryParser(query);
-            var allData = new List<CsvRecord>();
+            var allData = new List<CsvLog>();
             var missingColumns = new HashSet<string>(queryParser.Conditions.Select(c => c.Column));
 
             foreach (var filePath in filePaths)
@@ -52,17 +52,17 @@ namespace LogParser.Utilities.Services
                 throw new InvalidOperationException($"We couldn't find these wolumns: {string.Join(", ", missingColumns)}");
             }
 
-            var matchingRecords = allData.Where(record => EvaluateConditions(record.Fields, queryParser)).ToList();
+            var matchingLogs = allData.Where(record => EvaluateConditions(record.Fields, queryParser)).ToList();
 
-            if (matchingRecords.Any())
+            if (matchingLogs.Any())
             {
-                SaveRecordsToDatabase(matchingRecords);
+                SaveLogsToDatabase(matchingLogs);
             }
 
             return new QueryResult
             {
-                Count = matchingRecords.Count,
-                Records = matchingRecords
+                Count = matchingLogs.Count,
+                Logs = matchingLogs
             };
         }
 
@@ -100,10 +100,11 @@ namespace LogParser.Utilities.Services
             }
 
             var value = valueObj?.ToString();
+
             bool match = condition.Operator switch
             {
                 "=" => value != null && MatchWithWildcards(value, condition.Value),
-                "!=" => value != null && MatchWithWildcards(value, condition.Value),
+                "!=" => value != null && !MatchWithWildcards(value, condition.Value),
                 ">" => value != null && CompareValues(value, condition.Value) > 0,
                 "<" => value != null && CompareValues(value, condition.Value) < 0,
                 ">=" => value != null && CompareValues(value, condition.Value) >= 0,
@@ -129,18 +130,18 @@ namespace LogParser.Utilities.Services
             return Regex.IsMatch(value, regexPattern);
         }
 
-        public void DisplaySavedRecords()
+        public void DisplaySavedLogs()
         {
-            var records = _dbContext.CsvRecords.ToList();
+            var logs = _dbContext.CsvLogs.ToList();
 
-            if (records.Count == 0)
+            if (logs.Count == 0)
             {
-                Console.WriteLine("No Saved Records");
+                Console.WriteLine("No Saved Logs");
             }
             else
             {
-                // Displaying all records takes a lot of space, that's why we take 3
-                foreach (var record in records.Take(3))
+                // Displaying all logs takes a lot of space, that's why we take 3
+                foreach (var record in logs.Take(3))
                 {
                     var json = JsonSerializer.Serialize(record.Fields, new JsonSerializerOptions { WriteIndented = true });
                     Console.WriteLine($"Id: {record.Id}, Json: {json}");
@@ -148,16 +149,16 @@ namespace LogParser.Utilities.Services
             }
         }
 
-        public void SaveRecordsToDatabase(IEnumerable<CsvRecord> records)
+        public void SaveLogsToDatabase(IEnumerable<CsvLog> logs)
         {
-            if (records == null || !records.Any())
+            if (logs == null || !logs.Any())
             {
-                throw new ArgumentException("No records to save.", nameof(records));
+                throw new ArgumentException("No logs to save.", nameof(logs));
             }
 
-            foreach (var record in records)
+            foreach (var record in logs)
             {
-                _dbContext.CsvRecords.Add(new CsvRecord { Fields = record.Fields });
+                _dbContext.CsvLogs.Add(new CsvLog { Fields = record.Fields });
             }
 
             _dbContext.SaveChanges();

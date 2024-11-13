@@ -27,7 +27,7 @@ namespace LogParser.Utilities.Services
                 throw new ArgumentException("Parentheses are not supported. Please adjust your query and try again.");
             }
 
-            var conditionPattern = @"(?<Column>\w+)\s*(?<Operator>=|!=|>|<|>=|<=)\s*'(?<Value>[^']*)'";
+            var conditionPattern = @"(NOT\s+)?(?<Column>\w+)\s*(?<Operator>=|!=|>|<|>=|<=)\s*'(?<Value>[^']*)'";
             var logicalOperatorPattern = @"\s*(AND|OR)\s*";
 
             var conditionMatches = Regex.Matches(query, conditionPattern);
@@ -38,7 +38,8 @@ namespace LogParser.Utilities.Services
                 var column = match.Groups["Column"].Value;
                 var op = match.Groups["Operator"].Value;
                 var value = match.Groups["Value"].Value;
-                var isNot = op == "!=";
+
+                var isNot = !string.IsNullOrEmpty(match.Groups[1].Value) || op == "!=";
 
                 Conditions.Add((column, op, value, isNot));
             }

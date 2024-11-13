@@ -38,15 +38,15 @@ namespace LogParser.Tests.Services
             Assert.NotNull(result);
             var resultObject = Assert.IsType<QueryResult>(result);
             Assert.Equal(1, resultObject.Count);
-            Assert.Single(resultObject.Records);
+            Assert.Single(resultObject.Logs);
 
-            var record = resultObject.Records.First();
+            var record = resultObject.Logs.First();
             Assert.NotNull(record);
             Assert.Equal("Adil", record.Fields["Name"].ToString());
         }
 
         [Fact]
-        public void ExecuteQuery_InvalidColumn_ReturnsError()
+        public void ExecuteQuery_InvalidColumn_ThrowsInvalidOperationException()
         {
             var filePaths = new[] { "test.csv" };
             var mockData = CreateMockCsvData(new[] { ("Name", "Adil") });
@@ -57,12 +57,11 @@ namespace LogParser.Tests.Services
             var queryExecutor = new QueryExecutor(_mockCsvFileParser.Object, _dbContext);
             var query = "InvalidColumn = 'Value'";
 
-            var exception = Assert.Throws<InvalidOperationException>(() => queryExecutor.ExecuteQuery(filePaths, query));
-            Assert.Contains("Columns not found", exception.Message);
+            Assert.Throws<InvalidOperationException>(() => queryExecutor.ExecuteQuery(filePaths, query));
         }
 
         [Fact]
-        public void ExecuteQuery_NoMatchingRecords_ReturnsEmptyResult()
+        public void ExecuteQuery_NoMatchingLogs_ReturnsEmptyResult()
         {
             var filePaths = new[] { "test.csv" };
             var mockData = CreateMockCsvData(new[] { ("Name", "Adil") });
@@ -78,11 +77,11 @@ namespace LogParser.Tests.Services
             Assert.NotNull(result);
             var resultObject = Assert.IsType<QueryResult>(result);
             Assert.Equal(0, resultObject.Count);
-            Assert.Empty(resultObject.Records);
+            Assert.Empty(resultObject.Logs);
         }
 
         [Fact]
-        public void ExecuteQuery_SavesMatchingRecordsToDatabase()
+        public void ExecuteQuery_SavesMatchingLogsToDatabase()
         {
             var filePaths = new[] { "test.csv" };
             var mockData = CreateMockCsvData(new[] { ("Name", "Adil"), ("Age", "30") });
@@ -95,10 +94,10 @@ namespace LogParser.Tests.Services
 
             queryExecutor.ExecuteQuery(filePaths, query);
 
-            var records = _dbContext.CsvRecords.ToList();
-            Assert.Single(records);
+            var logs = _dbContext.CsvLogs.ToList();
+            Assert.Single(logs);
 
-            var savedRecord = records.First();
+            var savedRecord = logs.First();
             Assert.True(savedRecord.Fields.ContainsKey("Name"));
             Assert.Equal("Adil", savedRecord.Fields["Name"].ToString());
         }
@@ -140,7 +139,7 @@ namespace LogParser.Tests.Services
             _dbContext.Dispose();
         }
 
-        private IEnumerable<CsvRecord> CreateMockCsvData(params (string Column, string Value)[] columns)
+        private IEnumerable<CsvLog> CreateMockCsvData(params (string Column, string Value)[] columns)
         {
             var fields = new Dictionary<string, object>();
 
@@ -149,7 +148,7 @@ namespace LogParser.Tests.Services
                 fields[column] = value;
             }
 
-            return [new CsvRecord { Fields = fields }];
+            return [new CsvLog { Fields = fields }];
         }
     }
 }

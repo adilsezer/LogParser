@@ -70,15 +70,15 @@ namespace LogParser.ConsoleApp.Helpers
         public static void DisplayResults(QueryResult results, int severityThreshold)
         {
             Console.WriteLine("\n********** Query Result *******************");
-            Console.WriteLine($"Total Found Records: {results.Count}");
-            foreach (var record in results.Records)
+            Console.WriteLine($"Total Found Logs: {results.Count}");
+            foreach (var record in results.Logs)
             {
                 DisplayRecord(record, severityThreshold);
             }
             Console.WriteLine("*****************************************");
         }
 
-        private static void DisplayRecord(CsvRecord record, int severityThreshold)
+        private static void DisplayRecord(CsvLog record, int severityThreshold)
         {
             if (record.Fields.TryGetValue("severity", out var severityObj) &&
                 int.TryParse(severityObj?.ToString(), out int severity) &&
