@@ -1,4 +1,4 @@
-﻿using LogParser.Data;
+﻿using LogParser.Shared.Data;
 using LogParser.Shared.Models;
 using LogParser.Shared.Utilities;
 using Microsoft.EntityFrameworkCore;

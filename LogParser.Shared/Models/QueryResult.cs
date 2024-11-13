@@ -1,5 +1,4 @@
-﻿using LogParser.Data;
-
+﻿
 namespace LogParser.Shared.Models
 {
     public class QueryResult

@@ -1,4 +1,4 @@
-﻿namespace LogParser.Shared.Configuration
+﻿namespace LogParser.ConsoleApp.Configuration
 {
     public class AppSettings
     {

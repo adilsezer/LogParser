@@ -1,6 +1,6 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
-using LogParser.Data;
+using LogParser.Shared.Models;
 using System.Globalization;
 
 namespace LogParser.Shared.Utilities

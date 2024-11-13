@@ -1,4 +1,4 @@
-﻿using LogParser.Data;
+﻿using LogParser.Shared.Models;
 
 namespace LogParser.Shared.Utilities
 {
