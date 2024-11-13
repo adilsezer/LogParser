@@ -1,43 +1,29 @@
-﻿using CsvHelper;
-using CsvHelper.Configuration;
-using LogParser.Data;
-using System.Globalization;
+﻿using LogParser.Data;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace LogParser.Shared.Utilities
 {
-    public class CsvParser
+    public class QueryExecutor
     {
-        private readonly List<string> _filePaths;
+        private readonly ICsvFileParser _csvFileParser;
+        private readonly LogParserDbContext _dbContext;
 
-        public CsvParser(List<string> filePaths)
+        public QueryExecutor(ICsvFileParser csvFileParser, LogParserDbContext dbContext)
         {
-            _filePaths = filePaths;
+            _csvFileParser = csvFileParser;
+            _dbContext = dbContext;
         }
 
-        public IEnumerable<dynamic> ParseCsv(string filePath)
-        {
-            var records = new List<dynamic>();
-
-            using (var reader = new StreamReader(filePath))
-            using (var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)))
-            {
-                records.AddRange(csv.GetRecords<dynamic>().ToList());
-            }
-
-            return records;
-        }
-
-        public object QueryCsv(string query)
+        public object ExecuteQuery(IEnumerable<string> filePaths, string query)
         {
             var queryParser = new QueryParser(query);
             var allData = new List<dynamic>();
             var missingColumns = new HashSet<string>(queryParser.Conditions.Select(c => c.Column));
 
-            foreach (var filePath in _filePaths)
+            foreach (var filePath in filePaths)
             {
-                var data = ParseCsv(filePath);
+                var data = _csvFileParser.ParseCsv(filePath);
 
                 if (data.Any())
                 {
@@ -65,24 +51,19 @@ namespace LogParser.Shared.Utilities
                 uniqueRecords.Add(jsonString);
             }
 
-            using (var dbContext = new LogParserDbContext())
-            {
-                foreach (var json in uniqueRecords)
-                {
-                    dbContext.CsvRecords.Add(new CsvRecord { JsonData = json });
-                }
-                dbContext.SaveChanges();
-            }
+            SaveRecordsToDatabase(uniqueRecords);
 
-            var result = new
+            return new
             {
-                uniqueRecords.Count,
-                Records = uniqueRecords.Select(json => JsonSerializer.Deserialize<dynamic>(json)).ToList()
+                Count = uniqueRecords.Count,
+                Records = uniqueRecords
+                   .Select(json => JsonSerializer.Deserialize<dynamic>(json))
+                   .ToList()
             };
-            return result;
+
         }
 
-        private bool EvaluateConditions(IDictionary<string, object> rowDict, QueryParser queryParser)
+        public bool EvaluateConditions(IDictionary<string, object> rowDict, QueryParser queryParser)
         {
             var result = EvaluateCondition(rowDict, queryParser.Conditions[0]);
             for (var i = 1; i < queryParser.Conditions.Count; i++)
@@ -102,7 +83,7 @@ namespace LogParser.Shared.Utilities
             return result;
         }
 
-        private bool EvaluateCondition(IDictionary<string, object> rowDict, (string Column, string Operator, string Value, bool IsNot) condition)
+        public bool EvaluateCondition(IDictionary<string, object> rowDict, (string Column, string Operator, string Value, bool IsNot) condition)
         {
             if (!rowDict.TryGetValue(condition.Column, out var valueObj) || condition.Value == null)
             {
@@ -141,22 +122,33 @@ namespace LogParser.Shared.Utilities
 
         public void DisplaySavedRecords()
         {
-            using (var dbContext = new LogParserDbContext())
-            {
-                var records = dbContext.CsvRecords.ToList();
+            var records = _dbContext.CsvRecords.ToList();
 
-                if (records.Count == 0)
+            if (records.Count == 0)
+            {
+                Console.WriteLine("No Saved Records");
+            }
+            else
+            {
+                foreach (var record in records.Take(3))
                 {
-                    Console.WriteLine("No Saved Records");
-                }
-                else
-                {
-                    foreach (var record in records.Take(3))
-                    {
-                        Console.WriteLine($"Id: {record.Id}, Json: {record.JsonData}");
-                    }
+                    Console.WriteLine($"Id: {record.Id}, Json: {record.JsonData}");
                 }
             }
+        }
+
+        public void SaveRecordsToDatabase(IEnumerable<string> uniqueRecords)
+        {
+            if (uniqueRecords == null || !uniqueRecords.Any())
+            {
+                throw new ArgumentException("No records to save.", nameof(uniqueRecords));
+            }
+
+            foreach (var json in uniqueRecords)
+            {
+                _dbContext.CsvRecords.Add(new CsvRecord { JsonData = json });
+            }
+            _dbContext.SaveChanges();
         }
     }
 }

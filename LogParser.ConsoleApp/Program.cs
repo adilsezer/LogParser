@@ -1,5 +1,6 @@
-﻿using LogParser.Shared.Utilities;
-using System.Text.Json;
+﻿using LogParser.Data;
+using LogParser.Shared.Utilities;
+using Microsoft.EntityFrameworkCore;
 
 namespace LogParser.ConsoleApp
 {
@@ -16,7 +17,12 @@ namespace LogParser.ConsoleApp
                 return;
             }
 
-            var csvParser = new CsvParser(filePaths);
+            var csvParser = new CsvFileParser();
+            var options = new DbContextOptionsBuilder<LogParserDbContext>()
+                  .UseInMemoryDatabase("TestDb")
+                  .Options;
+            var dbContext = new LogParserDbContext(options);
+            var queryExecutor = new QueryExecutor(csvParser, dbContext);
 
             while (true)
             {
@@ -36,14 +42,8 @@ namespace LogParser.ConsoleApp
 
                 try
                 {
-                    var results = csvParser.QueryCsv(query);
-                    var jsonResult = JsonSerializer.Serialize(results, new JsonSerializerOptions { WriteIndented = true });
-
-                    Console.WriteLine("\n ********** Query Result ****************");
-                    Console.WriteLine(jsonResult.ToString());
-
-                    //Console.WriteLine("\n *********** Your Last 3 Query Result History ***********");
-                    //csvParser.DisplaySavedRecords();
+                    var results = queryExecutor.ExecuteQuery(filePaths, query);
+                    ConsoleHelpers.DisplayResults(results);
                 }
                 catch (Exception ex)
                 {

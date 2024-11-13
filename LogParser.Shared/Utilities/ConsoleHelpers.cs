@@ -59,5 +59,14 @@ namespace LogParser.Shared.Utilities
 
             return filePaths;
         }
+        public static void DisplayResults(object results)
+        {
+            var jsonResult = JsonSerializer.Serialize(results, new JsonSerializerOptions { WriteIndented = true });
+            Console.WriteLine("\n ********** Query Result ****************");
+            Console.WriteLine(jsonResult);
+
+            //Console.WriteLine("\n *********** Your Last 3 Query Result History ***********");
+            //csvParser.DisplaySavedRecords();
+        }
     }
 }
