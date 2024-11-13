@@ -1,9 +1,9 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
-using LogParser.Shared.Models;
+using LogParser.Utilities.Models;
 using System.Globalization;
 
-namespace LogParser.Shared.Utilities
+namespace LogParser.Utilities.Services
 {
     public class CsvFileParser : ICsvFileParser
     {

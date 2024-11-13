@@ -1,10 +1,10 @@
-﻿using LogParser.Shared.Data;
-using LogParser.Shared.Models;
-using LogParser.Shared.Utilities;
+﻿using LogParser.Utilities.Data;
+using LogParser.Utilities.Models;
+using LogParser.Utilities.Services;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 
-namespace LogParser.Tests.LogParser.Shared.Tests
+namespace LogParser.Tests.Services
 {
     public class QueryExecutorTests : IDisposable
     {

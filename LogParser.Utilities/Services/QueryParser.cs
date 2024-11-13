@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace LogParser.Shared.Utilities
+namespace LogParser.Utilities.Services
 {
     public class QueryParser
     {

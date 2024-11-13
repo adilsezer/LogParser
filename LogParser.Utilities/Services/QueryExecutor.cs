@@ -1,9 +1,9 @@
-﻿using LogParser.Shared.Data;
-using LogParser.Shared.Models;
+﻿using LogParser.Utilities.Data;
+using LogParser.Utilities.Models;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
-namespace LogParser.Shared.Utilities
+namespace LogParser.Utilities.Services
 {
     public class QueryExecutor
     {

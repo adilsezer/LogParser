@@ -1,8 +1,8 @@
-﻿using LogParser.Shared.Models;
+﻿using LogParser.Utilities.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 
-namespace LogParser.Shared.Data
+namespace LogParser.Utilities.Data
 {
     public class LogParserDbContext : DbContext
     {

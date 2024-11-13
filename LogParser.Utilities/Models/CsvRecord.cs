@@ -1,4 +1,4 @@
-﻿namespace LogParser.Shared.Models
+﻿namespace LogParser.Utilities.Models
 {
     public class CsvRecord
     {

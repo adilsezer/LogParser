@@ -1,8 +1,8 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
-using LogParser.Shared.Utilities;
+using LogParser.Utilities.Services;
 
-namespace LogParser.Tests.LogParser.Shared.Tests
+namespace LogParser.Tests.Services
 {
     public class CsvFileParserTests : IDisposable
     {

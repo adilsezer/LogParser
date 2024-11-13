@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\LogParser.Shared\LogParser.Shared.csproj" />
+    <ProjectReference Include="..\LogParser.Utilities\LogParser.Utilities.csproj" />
   </ItemGroup>
 
   <ItemGroup>

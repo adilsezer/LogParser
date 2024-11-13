@@ -1,6 +1,6 @@
-﻿using LogParser.Shared.Models;
+﻿using LogParser.Utilities.Models;
 
-namespace LogParser.Shared.Utilities
+namespace LogParser.Utilities.Services
 {
     public interface ICsvFileParser
     {
