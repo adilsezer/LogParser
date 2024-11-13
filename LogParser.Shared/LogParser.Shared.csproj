@@ -14,8 +14,4 @@
     <ProjectReference Include="..\LogParser.Data\LogParser.Data.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
-
 </Project>

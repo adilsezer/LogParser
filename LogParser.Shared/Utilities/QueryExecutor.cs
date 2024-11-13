@@ -1,4 +1,5 @@
 ﻿using LogParser.Data;
+using LogParser.Shared.Models;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -15,8 +16,17 @@ namespace LogParser.Shared.Utilities
             _dbContext = dbContext;
         }
 
-        public object ExecuteQuery(IEnumerable<string> filePaths, string query)
+        public QueryResult ExecuteQuery(IEnumerable<string> filePaths, string query)
         {
+            if (filePaths == null || !filePaths.Any())
+            {
+                throw new ArgumentNullException("No file paths provided");
+            }
+            else if (query == null)
+            {
+                throw new ArgumentNullException("Query cannot be null");
+            }
+
             var queryParser = new QueryParser(query);
             var allData = new List<dynamic>();
             var missingColumns = new HashSet<string>(queryParser.Conditions.Select(c => c.Column));
@@ -39,7 +49,7 @@ namespace LogParser.Shared.Utilities
 
             if (missingColumns.Any())
             {
-                return new { Error = $"Columns not found: {string.Join(", ", missingColumns)}" };
+                throw new InvalidOperationException($"Columns not found {string.Join(", ", missingColumns)}");
             }
 
             var matchingRecords = allData.Where(row => EvaluateConditions((IDictionary<string, object>)row, queryParser)).ToList();
@@ -51,16 +61,18 @@ namespace LogParser.Shared.Utilities
                 uniqueRecords.Add(jsonString);
             }
 
-            SaveRecordsToDatabase(uniqueRecords);
+            if (uniqueRecords.Any())
+            {
+                SaveRecordsToDatabase(uniqueRecords);
+            }
 
-            return new
+            return new QueryResult
             {
                 Count = uniqueRecords.Count,
                 Records = uniqueRecords
-                   .Select(json => JsonSerializer.Deserialize<dynamic>(json))
-                   .ToList()
+                    .Select(json => JsonSerializer.Deserialize<dynamic>(json)!)
+                    .ToList()
             };
-
         }
 
         public bool EvaluateConditions(IDictionary<string, object> rowDict, QueryParser queryParser)

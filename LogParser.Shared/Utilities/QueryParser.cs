@@ -24,7 +24,7 @@ namespace LogParser.Shared.Utilities
                 throw new ArgumentException("Parenthesis are not supported. Please adjust your query and try again.");
             }
 
-            var conditionPattern = @"(?<Column>\w+)\s*(?<Operator>=|!=)\s*'(?<Value>[^']*)'";
+            var conditionPattern = @"(?<Column>\w+)\s*(?<Operator>=|!=|>|<|>=|<=)\s*'(?<Value>[^']*)'";
             var logicalOperatorPattern = @"\s*(AND|OR)\s*";
 
             var conditionMatches = Regex.Matches(query, conditionPattern);

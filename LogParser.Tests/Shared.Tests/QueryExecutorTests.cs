@@ -1,4 +1,5 @@
 ﻿using LogParser.Data;
+using LogParser.Shared.Models;
 using LogParser.Shared.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Moq;
@@ -36,9 +37,9 @@ namespace LogParser.Tests.LogParser.Shared.Tests
             var result = queryExecutor.ExecuteQuery(filePaths, query);
 
             Assert.NotNull(result);
-            var resultObject = Assert.IsType<Dictionary<string, object>>(result);
-            Assert.Equal(1, resultObject["Count"]);
-            Assert.Single((List<dynamic>)resultObject["Records"]);
+            var resultObject = Assert.IsType<QueryResult>(result);
+            Assert.Equal(1, resultObject.Count);
+            Assert.Single(resultObject.Records);
         }
 
         [Fact]
@@ -53,12 +54,8 @@ namespace LogParser.Tests.LogParser.Shared.Tests
             var queryExecutor = new QueryExecutor(_mockCsvFileParser.Object, _dbContext);
             var query = "InvalidColumn = 'Value'";
 
-            var result = queryExecutor.ExecuteQuery(filePaths, query);
-
-            Assert.NotNull(result);
-            var resultObject = Assert.IsType<Dictionary<string, object>>(result);
-            Assert.Contains("Error", resultObject.Keys);
-            Assert.Contains("Columns not found", resultObject["Error"].ToString());
+            var exception = Assert.Throws<InvalidOperationException>(() => queryExecutor.ExecuteQuery(filePaths, query));
+            Assert.Contains("Columns not found", exception.Message);
         }
 
         [Fact]
@@ -76,9 +73,9 @@ namespace LogParser.Tests.LogParser.Shared.Tests
             var result = queryExecutor.ExecuteQuery(filePaths, query);
 
             Assert.NotNull(result);
-            var resultObject = Assert.IsType<Dictionary<string, object>>(result);
-            Assert.Equal(0, resultObject["Count"]);
-            Assert.Empty((List<dynamic>)resultObject["Records"]);
+            var resultObject = Assert.IsType<QueryResult>(result);
+            Assert.Equal(0, resultObject.Count);
+            Assert.Empty(resultObject.Records);
         }
 
         [Fact]
@@ -106,8 +103,8 @@ namespace LogParser.Tests.LogParser.Shared.Tests
             var queryExecutor = new QueryExecutor(_mockCsvFileParser.Object, _dbContext);
             var query = "Name = 'Alice'";
 
-            var exception = Assert.Throws<ArgumentException>(() => queryExecutor.ExecuteQuery(Enumerable.Empty<string>(), query));
-            Assert.Equal("No file paths provided", exception.Message);
+            var exception = Assert.Throws<ArgumentNullException>(() => queryExecutor.ExecuteQuery(Enumerable.Empty<string>(), query));
+            Assert.Equal("No file paths provided", exception.ParamName);
         }
 
         [Fact]

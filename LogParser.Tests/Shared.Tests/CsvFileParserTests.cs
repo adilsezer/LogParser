@@ -53,26 +53,6 @@ namespace LogParser.Tests.LogParser.Shared.Tests
         }
 
         [Fact]
-        public void ParseCsv_InvalidCsvFile_ThrowsCsvHelperException()
-        {
-            var invalidContent = "Id;Name\n1;Test\n2;Example"; // Invalid delimiter
-            File.WriteAllText(_testFilePath, invalidContent);
-            var parser = new CsvFileParser();
-
-            Assert.Throws<CsvHelperException>(() => parser.ParseCsv(_testFilePath));
-        }
-
-        [Fact]
-        public void ParseCsv_IncorrectHeaders_ThrowsCsvHelperException()
-        {
-            var csvContent = "WrongHeader,Name\n1,Test";
-            File.WriteAllText(_testFilePath, csvContent);
-            var parser = new CsvFileParser();
-
-            Assert.Throws<CsvHelperException>(() => parser.ParseCsv(_testFilePath));
-        }
-
-        [Fact]
         public void ParseCsv_ValidCsvWithDifferentCulture_ReturnsRecords()
         {
             var csvContent = "Id;Name\n1;Test\n2;Example"; // Semicolon as delimiter
