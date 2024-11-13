@@ -54,15 +54,22 @@ namespace LogParser.Utilities.Services
 
             var matchingLogs = allData.Where(record => EvaluateConditions(record.Fields, queryParser)).ToList();
 
-            if (matchingLogs.Any())
+            var distinctLogs = matchingLogs
+                .GroupBy(log => JsonSerializer.Serialize(log.Fields))
+                .Select(group => group.First())
+                .ToList();
+            var duplicateCount = matchingLogs.Count - distinctLogs.Count;
+
+            if (distinctLogs.Count != 0)
             {
-                SaveLogsToDatabase(matchingLogs);
+                SaveLogsToDatabase(distinctLogs);
             }
 
             return new QueryResult
             {
-                Count = matchingLogs.Count,
-                Logs = matchingLogs
+                Count = distinctLogs.Count,
+                DuplicateCount = duplicateCount,
+                Logs = distinctLogs
             };
         }
 

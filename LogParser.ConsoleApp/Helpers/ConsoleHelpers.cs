@@ -71,6 +71,7 @@ namespace LogParser.ConsoleApp.Helpers
         {
             Console.WriteLine("\n********** Query Result *******************");
             Console.WriteLine($"Total Found Logs: {results.Count}");
+            Console.WriteLine($"Duplicates hidden: {results.DuplicateCount}");
             foreach (var record in results.Logs)
             {
                 DisplayRecord(record, severityThreshold);
@@ -86,7 +87,7 @@ namespace LogParser.ConsoleApp.Helpers
             {
                 Console.WriteLine("\n========== ALERT NOTIFICATION ==========");
                 Console.WriteLine($"Severity {severity} exceeded threshold!");
-                Console.WriteLine("=============================\n");
+                Console.WriteLine("========================================\n");
             }
 
             var json = JsonSerializer.Serialize(record.Fields, new JsonSerializerOptions { WriteIndented = true });
