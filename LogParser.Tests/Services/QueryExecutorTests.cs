@@ -25,13 +25,13 @@ namespace LogParser.Tests.Services
         public void ExecuteQuery_ValidQuery_ReturnsExpectedResults()
         {
             var filePaths = new[] { "test.csv" };
-            var mockData = CreateMockCsvData(new[] { ("Name", "Jack"), ("Age", "30") });
+            var mockData = CreateMockCsvData(new[] { ("Name", "Adil"), ("Age", "30") });
             _mockCsvFileParser
                 .Setup(p => p.ParseCsv(It.IsAny<string>()))
                 .Returns(mockData);
 
             var queryExecutor = new QueryExecutor(_mockCsvFileParser.Object, _dbContext);
-            var query = "Name = 'Jack'";
+            var query = "Name = 'Adil'";
 
             var result = queryExecutor.ExecuteQuery(filePaths, query);
 
@@ -42,14 +42,14 @@ namespace LogParser.Tests.Services
 
             var record = resultObject.Records.First();
             Assert.NotNull(record);
-            Assert.Equal("Jack", record.Fields["Name"].ToString());
+            Assert.Equal("Adil", record.Fields["Name"].ToString());
         }
 
         [Fact]
         public void ExecuteQuery_InvalidColumn_ReturnsError()
         {
             var filePaths = new[] { "test.csv" };
-            var mockData = CreateMockCsvData(new[] { ("Name", "Alice") });
+            var mockData = CreateMockCsvData(new[] { ("Name", "Adil") });
             _mockCsvFileParser
                 .Setup(p => p.ParseCsv(It.IsAny<string>()))
                 .Returns(mockData);
@@ -65,13 +65,13 @@ namespace LogParser.Tests.Services
         public void ExecuteQuery_NoMatchingRecords_ReturnsEmptyResult()
         {
             var filePaths = new[] { "test.csv" };
-            var mockData = CreateMockCsvData(new[] { ("Name", "Alice") });
+            var mockData = CreateMockCsvData(new[] { ("Name", "Adil") });
             _mockCsvFileParser
                 .Setup(p => p.ParseCsv(It.IsAny<string>()))
                 .Returns(mockData);
 
             var queryExecutor = new QueryExecutor(_mockCsvFileParser.Object, _dbContext);
-            var query = "Name = 'Bob'";
+            var query = "Name = 'Peter'";
 
             var result = queryExecutor.ExecuteQuery(filePaths, query);
 
@@ -85,13 +85,13 @@ namespace LogParser.Tests.Services
         public void ExecuteQuery_SavesMatchingRecordsToDatabase()
         {
             var filePaths = new[] { "test.csv" };
-            var mockData = CreateMockCsvData(new[] { ("Name", "Alice"), ("Age", "30") });
+            var mockData = CreateMockCsvData(new[] { ("Name", "Adil"), ("Age", "30") });
             _mockCsvFileParser
                 .Setup(p => p.ParseCsv(It.IsAny<string>()))
                 .Returns(mockData);
 
             var queryExecutor = new QueryExecutor(_mockCsvFileParser.Object, _dbContext);
-            var query = "Name = 'Alice'";
+            var query = "Name = 'Adil'";
 
             queryExecutor.ExecuteQuery(filePaths, query);
 
@@ -100,16 +100,16 @@ namespace LogParser.Tests.Services
 
             var savedRecord = records.First();
             Assert.True(savedRecord.Fields.ContainsKey("Name"));
-            Assert.Equal("Alice", savedRecord.Fields["Name"].ToString());
+            Assert.Equal("Adil", savedRecord.Fields["Name"].ToString());
         }
 
         [Fact]
         public void ExecuteQuery_EmptyFilePaths_ThrowsArgumentException()
         {
             var queryExecutor = new QueryExecutor(_mockCsvFileParser.Object, _dbContext);
-            var query = "Name = 'Alice'";
+            var query = "Name = 'Adil'";
 
-            var exception = Assert.Throws<ArgumentNullException>(() => queryExecutor.ExecuteQuery(Enumerable.Empty<string>(), query));
+            var exception = Assert.Throws<ArgumentNullException>(() => queryExecutor.ExecuteQuery([], query));
             Assert.Contains("No file paths provided", exception.Message);
         }
 
@@ -149,10 +149,7 @@ namespace LogParser.Tests.Services
                 fields[column] = value;
             }
 
-            return new List<CsvRecord>
-    {
-        new CsvRecord { Fields = fields }
-    };
+            return [new CsvRecord { Fields = fields }];
         }
     }
 }

@@ -14,7 +14,7 @@ namespace LogParser.ConsoleApp
 
             if (filePaths.Count == 0)
             {
-                Console.WriteLine("Exiting the app as no file was provided.");
+                Console.WriteLine("Exiting the app because no file was provided.");
                 return;
             }
 
@@ -34,7 +34,7 @@ namespace LogParser.ConsoleApp
         {
             while (true)
             {
-                Console.WriteLine("Enter your query or type 'exit' to quit:");
+                Console.WriteLine("Enter your log query or type 'exit' to quit:");
                 var query = Console.ReadLine();
 
                 if (string.IsNullOrWhiteSpace(query))
@@ -56,7 +56,7 @@ namespace LogParser.ConsoleApp
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"An error occurred: {ex.Message}");
+                    Console.WriteLine($"An error occurred, {ex.Message}");
                 }
             }
         }

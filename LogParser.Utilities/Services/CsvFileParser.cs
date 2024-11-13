@@ -35,7 +35,7 @@ namespace LogParser.Utilities.Services
             }
             catch (Exception ex)
             {
-                throw new InvalidOperationException($"Error parsing CSV file: {ex.Message}");
+                throw new InvalidOperationException($"Error happened when we parsing the CSV file, {ex.Message}");
             }
         }
     }

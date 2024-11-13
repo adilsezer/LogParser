@@ -20,11 +20,11 @@ namespace LogParser.Utilities.Services
         {
             if (filePaths == null || !filePaths.Any())
             {
-                throw new ArgumentNullException(nameof(filePaths), "No file paths provided");
+                throw new ArgumentNullException("No file paths provided");
             }
             if (query == null)
             {
-                throw new ArgumentNullException(nameof(query), "Query cannot be null");
+                throw new ArgumentNullException("Query cannot be null");
             }
 
             var queryParser = new QueryParser(query);
@@ -40,16 +40,16 @@ namespace LogParser.Utilities.Services
                     var columnsInFile = data.First().Fields.Keys;
                     missingColumns.ExceptWith(columnsInFile);
 
-                    if (!missingColumns.Any())
+                    if (missingColumns.Count == 0)
                     {
                         allData.AddRange(data);
                     }
                 }
             }
 
-            if (missingColumns.Any())
+            if (missingColumns.Count != 0)
             {
-                throw new InvalidOperationException($"Columns not found: {string.Join(", ", missingColumns)}");
+                throw new InvalidOperationException($"We couldn't find these wolumns: {string.Join(", ", missingColumns)}");
             }
 
             var matchingRecords = allData.Where(record => EvaluateConditions(record.Fields, queryParser)).ToList();
@@ -69,7 +69,9 @@ namespace LogParser.Utilities.Services
         public bool EvaluateConditions(Dictionary<string, object> fields, QueryParser queryParser)
         {
             if (queryParser.Conditions.Count == 0)
+            {
                 return false;
+            }
 
             var result = EvaluateCondition(fields, queryParser.Conditions[0]);
 
@@ -106,7 +108,7 @@ namespace LogParser.Utilities.Services
                 "<" => value != null && CompareValues(value, condition.Value) < 0,
                 ">=" => value != null && CompareValues(value, condition.Value) >= 0,
                 "<=" => value != null && CompareValues(value, condition.Value) <= 0,
-                _ => throw new NotImplementedException($"Operator '{condition.Operator}' is not supported.")
+                _ => throw new NotImplementedException($"This operator {condition.Operator} is not supported.")
             };
 
             return condition.IsNot ? !match : match;
@@ -137,6 +139,7 @@ namespace LogParser.Utilities.Services
             }
             else
             {
+                // Displaying all records takes a lot of space, that's why we take 3
                 foreach (var record in records.Take(3))
                 {
                     var json = JsonSerializer.Serialize(record.Fields, new JsonSerializerOptions { WriteIndented = true });

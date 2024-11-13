@@ -10,23 +10,18 @@ namespace LogParser.ConsoleApp.Helpers
         {
             if (!File.Exists(filePath))
             {
-                throw new FileNotFoundException($"Configuration file not found: {filePath}");
+                throw new FileNotFoundException($"Configuration file not found");
             }
 
             var json = File.ReadAllText(filePath);
             var settings = JsonSerializer.Deserialize<AppSettings>(json);
 
-            if (settings == null)
-            {
-                throw new InvalidOperationException("Failed to load configuration");
-            }
-
-            return settings;
+            return settings ?? throw new InvalidOperationException("Failed to load the configuration");
         }
 
         public static List<string> GetFilePathsFromUser(string defaultFilePath)
         {
-            Console.WriteLine("Enter the paths of CSV files, separated by commas. Press Enter to use the default file:");
+            Console.WriteLine("Enter the paths of CSV files, separate them by commas. Press Enter to use the default file:");
             var input = Console.ReadLine();
             var filePaths = new List<string>();
 
@@ -38,7 +33,7 @@ namespace LogParser.ConsoleApp.Helpers
                 }
                 else
                 {
-                    Console.WriteLine($"Default file not found: {defaultFilePath}");
+                    Console.WriteLine($"Default file not found");
                 }
             }
             else
@@ -46,14 +41,13 @@ namespace LogParser.ConsoleApp.Helpers
                 var paths = input.Split(',', StringSplitOptions.RemoveEmptyEntries);
                 foreach (var path in paths)
                 {
-                    var trimmedPath = path.Trim();
-                    if (File.Exists(trimmedPath))
+                    if (File.Exists(path.Trim()))
                     {
-                        filePaths.Add(trimmedPath);
+                        filePaths.Add(path.Trim());
                     }
                     else
                     {
-                        Console.WriteLine($"File not found: {trimmedPath}");
+                        Console.WriteLine($"This file not found: {path.Trim()}");
                     }
                 }
             }
@@ -63,10 +57,10 @@ namespace LogParser.ConsoleApp.Helpers
 
         public static int GetSeverityThreshold()
         {
-            Console.WriteLine("Please enter the severity threshold: ");
+            Console.WriteLine("Please enter the severity threshold as a number: ");
             if (!int.TryParse(Console.ReadLine(), out int severityThreshold))
             {
-                Console.WriteLine("Invalid input. Defaulting severity threshold to 3.");
+                Console.WriteLine("Invalid input. We will use severity threshold as 3.");
                 severityThreshold = 3;
             }
 
@@ -75,25 +69,24 @@ namespace LogParser.ConsoleApp.Helpers
 
         public static void DisplayResults(QueryResult results, int severityThreshold)
         {
-            Console.WriteLine("\n********** Query Result ****************");
-            Console.WriteLine($"Total Records: {results.Count}");
+            Console.WriteLine("\n********** Query Result *******************");
+            Console.WriteLine($"Total Found Records: {results.Count}");
             foreach (var record in results.Records)
             {
                 DisplayRecord(record, severityThreshold);
             }
-            Console.WriteLine("***************************************");
+            Console.WriteLine("*****************************************");
         }
 
         private static void DisplayRecord(CsvRecord record, int severityThreshold)
         {
-            // Check for alerts based on severity
             if (record.Fields.TryGetValue("severity", out var severityObj) &&
                 int.TryParse(severityObj?.ToString(), out int severity) &&
                 severity >= severityThreshold)
             {
-                Console.WriteLine("\n========== ALERT ==========");
+                Console.WriteLine("\n========== ALERT NOTIFICATION ==========");
                 Console.WriteLine($"Severity {severity} exceeded threshold!");
-                Console.WriteLine("===========================\n");
+                Console.WriteLine("=============================\n");
             }
 
             var json = JsonSerializer.Serialize(record.Fields, new JsonSerializerOptions { WriteIndented = true });

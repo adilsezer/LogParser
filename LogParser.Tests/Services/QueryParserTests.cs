@@ -98,13 +98,10 @@ namespace LogParser.Tests.Services
         [Fact]
         public void Constructor_QueryWithMultipleConditionsAndMixedOperators_ParsesCorrectly()
         {
-            // Arrange
             var query = "Name != 'Jack' OR Age >= '30' AND Country = 'LTU'";
 
-            // Act
             var queryParser = new QueryParser(query);
 
-            // Assert
             Assert.Equal(3, queryParser.Conditions.Count);
             Assert.Equal(2, queryParser.LogicalOperators.Count);
 
@@ -130,13 +127,10 @@ namespace LogParser.Tests.Services
         [Fact]
         public void Constructor_QueryWithExtraSpaces_ParsesCorrectly()
         {
-            // Arrange
             var query = "  Name  =  'Jack'   AND   Age  >  '30'  ";
 
-            // Act
             var queryParser = new QueryParser(query);
 
-            // Assert
             Assert.Equal(2, queryParser.Conditions.Count);
             Assert.Single(queryParser.LogicalOperators);
 
