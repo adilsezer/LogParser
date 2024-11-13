@@ -25,10 +25,14 @@ namespace LogParser.Tests.LogParser.Shared.Tests
             Assert.NotNull(result);
             var records = result.ToList();
             Assert.Equal(2, records.Count);
-            Assert.Equal("1", records[0].Id);
-            Assert.Equal("Test", records[0].Name);
-            Assert.Equal("2", records[1].Id);
-            Assert.Equal("Example", records[1].Name);
+
+            Assert.NotNull(records[0]);
+            Assert.Equal("1", records[0].Fields["Id"].ToString());
+            Assert.Equal("Test", records[0].Fields["Name"].ToString());
+
+            Assert.NotNull(records[1]);
+            Assert.Equal("2", records[1].Fields["Id"].ToString());
+            Assert.Equal("Example", records[1].Fields["Name"].ToString());
         }
 
         [Fact]
@@ -59,26 +63,37 @@ namespace LogParser.Tests.LogParser.Shared.Tests
             File.WriteAllText(_testFilePath, csvContent);
             var parser = new CsvFileParser();
 
-            IEnumerable<dynamic> ParseCsv()
-            {
-                using var reader = new StreamReader(_testFilePath);
-                var config = new CsvConfiguration(System.Globalization.CultureInfo.InvariantCulture)
-                {
-                    Delimiter = ";"
-                };
-                using var csv = new CsvReader(reader, config);
-                return csv.GetRecords<dynamic>().ToList();
-            }
-
-            var result = ParseCsv();
+            var result = ParseCsvWithCustomDelimiter();
 
             Assert.NotNull(result);
             Assert.Equal(2, result.Count());
+
+            var firstRecord = result.ElementAt(0) as IDictionary<string, object>;
+            var secondRecord = result.ElementAt(1) as IDictionary<string, object>;
+
+            Assert.NotNull(firstRecord);
+            Assert.Equal("1", firstRecord["Id"].ToString());
+            Assert.Equal("Test", firstRecord["Name"].ToString());
+
+            Assert.NotNull(secondRecord);
+            Assert.Equal("2", secondRecord["Id"].ToString());
+            Assert.Equal("Example", secondRecord["Name"].ToString());
+        }
+
+        private IEnumerable<dynamic> ParseCsvWithCustomDelimiter()
+        {
+            using var reader = new StreamReader(_testFilePath);
+            var config = new CsvConfiguration(System.Globalization.CultureInfo.InvariantCulture)
+            {
+                Delimiter = ";"
+            };
+            using var csv = new CsvReader(reader, config);
+            return csv.GetRecords<dynamic>().ToList();
         }
 
         public void Dispose()
         {
-            // Cleanuing up test file
+            // Cleaning up test file
             if (File.Exists(_testFilePath))
             {
                 File.Delete(_testFilePath);

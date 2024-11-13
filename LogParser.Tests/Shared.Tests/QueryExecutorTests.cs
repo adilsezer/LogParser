@@ -3,7 +3,6 @@ using LogParser.Shared.Models;
 using LogParser.Shared.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using System.Dynamic;
 
 namespace LogParser.Tests.LogParser.Shared.Tests
 {
@@ -40,6 +39,10 @@ namespace LogParser.Tests.LogParser.Shared.Tests
             var resultObject = Assert.IsType<QueryResult>(result);
             Assert.Equal(1, resultObject.Count);
             Assert.Single(resultObject.Records);
+
+            var record = resultObject.Records.First();
+            Assert.NotNull(record);
+            Assert.Equal("Jack", record.Fields["Name"].ToString());
         }
 
         [Fact]
@@ -94,7 +97,10 @@ namespace LogParser.Tests.LogParser.Shared.Tests
 
             var records = _dbContext.CsvRecords.ToList();
             Assert.Single(records);
-            Assert.Contains("Alice", records.First().JsonData);
+
+            var savedRecord = records.First();
+            Assert.True(savedRecord.Fields.ContainsKey("Name"));
+            Assert.Equal("Alice", savedRecord.Fields["Name"].ToString());
         }
 
         [Fact]
@@ -104,7 +110,7 @@ namespace LogParser.Tests.LogParser.Shared.Tests
             var query = "Name = 'Alice'";
 
             var exception = Assert.Throws<ArgumentNullException>(() => queryExecutor.ExecuteQuery(Enumerable.Empty<string>(), query));
-            Assert.Equal("No file paths provided", exception.ParamName);
+            Assert.Contains("No file paths provided", exception.Message);
         }
 
         [Fact]
@@ -114,7 +120,7 @@ namespace LogParser.Tests.LogParser.Shared.Tests
             var queryExecutor = new QueryExecutor(_mockCsvFileParser.Object, _dbContext);
 
             var exception = Assert.Throws<ArgumentNullException>(() => queryExecutor.ExecuteQuery(filePaths, null));
-            Assert.Equal("Query cannot be null", exception.ParamName);
+            Assert.Contains("Query cannot be null", exception.Message);
         }
 
         [Fact]
@@ -134,17 +140,19 @@ namespace LogParser.Tests.LogParser.Shared.Tests
             _dbContext.Dispose();
         }
 
-        private IEnumerable<dynamic> CreateMockCsvData(params (string Column, string Value)[] columns)
+        private IEnumerable<CsvRecord> CreateMockCsvData(params (string Column, string Value)[] columns)
         {
-            var expandoObject = new ExpandoObject();
-            var dictionary = (IDictionary<string, object>)expandoObject;
+            var fields = new Dictionary<string, object>();
 
             foreach (var (column, value) in columns)
             {
-                dictionary.Add(column, value);
+                fields[column] = value;
             }
 
-            return new List<dynamic> { expandoObject };
+            return new List<CsvRecord>
+    {
+        new CsvRecord { Fields = fields }
+    };
         }
     }
 }

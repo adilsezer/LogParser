@@ -1,7 +1,9 @@
-﻿namespace LogParser.Shared.Utilities
+﻿using LogParser.Data;
+
+namespace LogParser.Shared.Utilities
 {
     public interface ICsvFileParser
     {
-        IEnumerable<dynamic> ParseCsv(string filePath);
+        IEnumerable<CsvRecord> ParseCsv(string filePath);
     }
 }

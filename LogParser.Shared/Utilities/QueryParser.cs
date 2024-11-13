@@ -1,12 +1,10 @@
-﻿
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace LogParser.Shared.Utilities
 {
     public class QueryParser
     {
         public List<(string Column, string Operator, string Value, bool IsNot)> Conditions { get; set; }
-
         public List<string> LogicalOperators { get; set; }
 
         public QueryParser(string query)
@@ -19,9 +17,14 @@ namespace LogParser.Shared.Utilities
 
         private void ParseQuery(string query)
         {
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                throw new ArgumentException("Query cannot be empty.");
+            }
+
             if (query.Contains("(") || query.Contains(")"))
             {
-                throw new ArgumentException("Parenthesis are not supported. Please adjust your query and try again.");
+                throw new ArgumentException("Parentheses are not supported. Please adjust your query and try again.");
             }
 
             var conditionPattern = @"(?<Column>\w+)\s*(?<Operator>=|!=|>|<|>=|<=)\s*'(?<Value>[^']*)'";
@@ -42,7 +45,7 @@ namespace LogParser.Shared.Utilities
 
             foreach (Match match in logicalOperatorMatches)
             {
-                LogicalOperators.Add(match.Value.Trim());
+                LogicalOperators.Add(match.Value.Trim().ToUpper());
             }
 
             if (Conditions.Count - 1 != LogicalOperators.Count)

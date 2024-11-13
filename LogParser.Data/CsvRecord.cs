@@ -3,6 +3,6 @@
     public class CsvRecord
     {
         public int Id { get; set; }
-        public string JsonData { get; set; } = string.Empty;
+        public Dictionary<string, object> Fields { get; set; } = new();
     }
 }

@@ -51,7 +51,7 @@ namespace LogParser.Tests.LogParser.Shared.Tests
             var queryWithParentheses = "(Name = 'Jack') AND (Age > '30')";
 
             var exception = Assert.Throws<ArgumentException>(() => new QueryParser(queryWithParentheses));
-            Assert.Contains("Parenthesis are not supported", exception.Message);
+            Assert.Contains("Parentheses are not supported", exception.Message);
         }
 
         [Fact]
@@ -60,7 +60,7 @@ namespace LogParser.Tests.LogParser.Shared.Tests
             var emptyQuery = "";
 
             var exception = Assert.Throws<ArgumentException>(() => new QueryParser(emptyQuery));
-            Assert.Contains("Invalid query format", exception.Message);
+            Assert.Contains("Query cannot be empty", exception.Message);
         }
 
         [Fact]

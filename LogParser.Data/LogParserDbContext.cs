@@ -1,22 +1,27 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace LogParser.Data
 {
     public class LogParserDbContext : DbContext
     {
+        public DbSet<CsvRecord> CsvRecords { get; set; }
+
         public LogParserDbContext(DbContextOptions<LogParserDbContext> options)
             : base(options)
         {
         }
 
-        public DbSet<CsvRecord> CsvRecords { get; set; }
-
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            if (!optionsBuilder.IsConfigured)
+            modelBuilder.Entity<CsvRecord>(entity =>
             {
-                optionsBuilder.UseInMemoryDatabase("InMemoryDb");
-            }
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Fields)
+                      .HasConversion(
+                          v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                          v => JsonSerializer.Deserialize<Dictionary<string, object>>(v, (JsonSerializerOptions?)null) ?? new Dictionary<string, object>());
+            });
         }
     }
 }

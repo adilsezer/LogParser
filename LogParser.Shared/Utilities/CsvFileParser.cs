@@ -1,12 +1,13 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
+using LogParser.Data;
 using System.Globalization;
 
 namespace LogParser.Shared.Utilities
 {
     public class CsvFileParser : ICsvFileParser
     {
-        public IEnumerable<dynamic> ParseCsv(string filePath)
+        public IEnumerable<CsvRecord> ParseCsv(string filePath)
         {
             if (!File.Exists(filePath))
             {
@@ -17,7 +18,20 @@ namespace LogParser.Shared.Utilities
             {
                 using var reader = new StreamReader(filePath);
                 using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture));
-                return csv.GetRecords<dynamic>().ToList();
+
+                var records = new List<CsvRecord>();
+                int idCounter = 1;
+
+                foreach (var row in csv.GetRecords<dynamic>())
+                {
+                    var csvRecord = new CsvRecord
+                    {
+                        Id = idCounter++,
+                        Fields = ((IDictionary<string, object>)row).ToDictionary(kvp => kvp.Key, kvp => kvp.Value)
+                    };
+                    records.Add(csvRecord);
+                }
+                return records;
             }
             catch (Exception ex)
             {

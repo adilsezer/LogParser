@@ -1,8 +1,10 @@
-﻿namespace LogParser.Shared.Models
+﻿using LogParser.Data;
+
+namespace LogParser.Shared.Models
 {
     public class QueryResult
     {
         public int Count { get; set; }
-        public List<dynamic> Records { get; set; } = new List<dynamic>();
+        public List<CsvRecord> Records { get; set; } = new();
     }
 }

@@ -20,15 +20,15 @@ namespace LogParser.Shared.Utilities
         {
             if (filePaths == null || !filePaths.Any())
             {
-                throw new ArgumentNullException("No file paths provided");
+                throw new ArgumentNullException(nameof(filePaths), "No file paths provided");
             }
-            else if (query == null)
+            if (query == null)
             {
-                throw new ArgumentNullException("Query cannot be null");
+                throw new ArgumentNullException(nameof(query), "Query cannot be null");
             }
 
             var queryParser = new QueryParser(query);
-            var allData = new List<dynamic>();
+            var allData = new List<CsvRecord>();
             var missingColumns = new HashSet<string>(queryParser.Conditions.Select(c => c.Column));
 
             foreach (var filePath in filePaths)
@@ -37,7 +37,7 @@ namespace LogParser.Shared.Utilities
 
                 if (data.Any())
                 {
-                    var columnsInFile = ((IDictionary<string, object>)data.First()).Keys;
+                    var columnsInFile = data.First().Fields.Keys;
                     missingColumns.ExceptWith(columnsInFile);
 
                     if (!missingColumns.Any())
@@ -49,55 +49,50 @@ namespace LogParser.Shared.Utilities
 
             if (missingColumns.Any())
             {
-                throw new InvalidOperationException($"Columns not found {string.Join(", ", missingColumns)}");
+                throw new InvalidOperationException($"Columns not found: {string.Join(", ", missingColumns)}");
             }
 
-            var matchingRecords = allData.Where(row => EvaluateConditions((IDictionary<string, object>)row, queryParser)).ToList();
-            var uniqueRecords = new HashSet<string>();
+            var matchingRecords = allData.Where(record => EvaluateConditions(record.Fields, queryParser)).ToList();
 
-            foreach (var record in matchingRecords)
+            if (matchingRecords.Any())
             {
-                var jsonString = JsonSerializer.Serialize(record);
-                uniqueRecords.Add(jsonString);
-            }
-
-            if (uniqueRecords.Any())
-            {
-                SaveRecordsToDatabase(uniqueRecords);
+                SaveRecordsToDatabase(matchingRecords);
             }
 
             return new QueryResult
             {
-                Count = uniqueRecords.Count,
-                Records = uniqueRecords
-                    .Select(json => JsonSerializer.Deserialize<dynamic>(json)!)
-                    .ToList()
+                Count = matchingRecords.Count,
+                Records = matchingRecords
             };
         }
 
-        public bool EvaluateConditions(IDictionary<string, object> rowDict, QueryParser queryParser)
+        public bool EvaluateConditions(Dictionary<string, object> fields, QueryParser queryParser)
         {
-            var result = EvaluateCondition(rowDict, queryParser.Conditions[0]);
+            if (queryParser.Conditions.Count == 0)
+                return false;
+
+            var result = EvaluateCondition(fields, queryParser.Conditions[0]);
+
             for (var i = 1; i < queryParser.Conditions.Count; i++)
             {
                 var condition = queryParser.Conditions[i];
                 var logicalOperator = queryParser.LogicalOperators[i - 1];
 
-                if (logicalOperator == "AND")
+                if (logicalOperator.Equals("AND", StringComparison.OrdinalIgnoreCase))
                 {
-                    result = result && EvaluateCondition(rowDict, condition);
+                    result = result && EvaluateCondition(fields, condition);
                 }
-                else if (logicalOperator == "OR")
+                else if (logicalOperator.Equals("OR", StringComparison.OrdinalIgnoreCase))
                 {
-                    result = result || EvaluateCondition(rowDict, condition);
+                    result = result || EvaluateCondition(fields, condition);
                 }
             }
             return result;
         }
 
-        public bool EvaluateCondition(IDictionary<string, object> rowDict, (string Column, string Operator, string Value, bool IsNot) condition)
+        public bool EvaluateCondition(Dictionary<string, object> fields, (string Column, string Operator, string Value, bool IsNot) condition)
         {
-            if (!rowDict.TryGetValue(condition.Column, out var valueObj) || condition.Value == null)
+            if (!fields.TryGetValue(condition.Column, out var valueObj) || condition.Value == null)
             {
                 return false;
             }
@@ -111,7 +106,7 @@ namespace LogParser.Shared.Utilities
                 "<" => value != null && CompareValues(value, condition.Value) < 0,
                 ">=" => value != null && CompareValues(value, condition.Value) >= 0,
                 "<=" => value != null && CompareValues(value, condition.Value) <= 0,
-                _ => throw new NotImplementedException("Not supported operator")
+                _ => throw new NotImplementedException($"Operator '{condition.Operator}' is not supported.")
             };
 
             return condition.IsNot ? !match : match;
@@ -144,22 +139,24 @@ namespace LogParser.Shared.Utilities
             {
                 foreach (var record in records.Take(3))
                 {
-                    Console.WriteLine($"Id: {record.Id}, Json: {record.JsonData}");
+                    var json = JsonSerializer.Serialize(record.Fields, new JsonSerializerOptions { WriteIndented = true });
+                    Console.WriteLine($"Id: {record.Id}, Json: {json}");
                 }
             }
         }
 
-        public void SaveRecordsToDatabase(IEnumerable<string> uniqueRecords)
+        public void SaveRecordsToDatabase(IEnumerable<CsvRecord> records)
         {
-            if (uniqueRecords == null || !uniqueRecords.Any())
+            if (records == null || !records.Any())
             {
-                throw new ArgumentException("No records to save.", nameof(uniqueRecords));
+                throw new ArgumentException("No records to save.", nameof(records));
             }
 
-            foreach (var json in uniqueRecords)
+            foreach (var record in records)
             {
-                _dbContext.CsvRecords.Add(new CsvRecord { JsonData = json });
+                _dbContext.CsvRecords.Add(new CsvRecord { Fields = record.Fields });
             }
+
             _dbContext.SaveChanges();
         }
     }
