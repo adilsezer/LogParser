@@ -77,7 +77,11 @@ namespace LogParser.ConsoleApp.Helpers
                     int.TryParse(severityObj?.ToString(), out int severity) &&
                     severity >= severityThreshold)
                 {
-                    alerts.Add($"Severity {severity} exceeded threshold for log id: {log.Id}!");
+                    var logId = log.Fields.TryGetValue("externalId", out var externalIdObj)
+                                ? externalIdObj?.ToString()
+                                : "Unknown";
+
+                    alerts.Add($"Severity {severity} exceeded threshold for external log id: {logId}!");
                 }
             }
 
