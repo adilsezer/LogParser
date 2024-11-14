@@ -1,5 +1,6 @@
 ﻿using LogParser.ConsoleApp.Helpers;
 using LogParser.Utilities.Data;
+using LogParser.Utilities.Models;
 using LogParser.Utilities.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -39,24 +40,38 @@ namespace LogParser.ConsoleApp
 
                 if (string.IsNullOrWhiteSpace(query))
                 {
-                    Console.WriteLine("Query cannot be empty!");
+                    Console.WriteLine("Query cannot be empty! Please provide a valid input.");
                     continue;
                 }
 
                 if (query.Equals("exit", StringComparison.OrdinalIgnoreCase))
                 {
-                    Console.WriteLine("Exiting the app!");
+                    Console.WriteLine("Exiting the application. Thank you!");
                     break;
                 }
 
                 try
                 {
                     var results = queryExecutor.ExecuteQuery(filePaths, query);
-                    ConsoleHelpers.DisplayResults(results, severityThreshold);
+                    ConsoleHelpers.DisplayResults(results, query, severityThreshold);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    var errorResponse = new JsonResponse
+                    {
+                        Query = query,
+                        Message = $"Error: {ex.Message}. Please adjust your query."
+                    };
+                    Console.WriteLine(JsonUtility.Serialize(errorResponse));
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"An error occurred, {ex.Message}");
+                    var errorResponse = new JsonResponse
+                    {
+                        Query = query,
+                        Message = $"An unexpected error occurred: {ex.Message}"
+                    };
+                    Console.WriteLine(JsonUtility.Serialize(errorResponse));
                 }
             }
         }

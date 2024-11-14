@@ -1,6 +1,6 @@
 ﻿using LogParser.Utilities.Models;
+using LogParser.Utilities.Services;
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
 
 namespace LogParser.Utilities.Data
 {
@@ -20,8 +20,8 @@ namespace LogParser.Utilities.Data
                 entity.HasKey(e => e.Id);
                 entity.Property(e => e.Fields)
                       .HasConversion(
-                          v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
-                          v => JsonSerializer.Deserialize<Dictionary<string, object>>(v, (JsonSerializerOptions?)null) ?? new Dictionary<string, object>());
+                          v => JsonUtility.Serialize(v),
+                          v => JsonUtility.Deserialize<Dictionary<string, object>>(v) ?? new Dictionary<string, object>());
             });
         }
     }

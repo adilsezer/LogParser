@@ -1,6 +1,6 @@
 ﻿using LogParser.ConsoleApp.Configuration;
 using LogParser.Utilities.Models;
-using System.Text.Json;
+using LogParser.Utilities.Services;
 
 namespace LogParser.ConsoleApp.Helpers
 {
@@ -14,7 +14,7 @@ namespace LogParser.ConsoleApp.Helpers
             }
 
             var json = File.ReadAllText(filePath);
-            var settings = JsonSerializer.Deserialize<AppSettings>(json);
+            var settings = JsonUtility.Deserialize<AppSettings>(json);
 
             return settings ?? throw new InvalidOperationException("Failed to load the configuration");
         }
@@ -67,31 +67,30 @@ namespace LogParser.ConsoleApp.Helpers
             return severityThreshold;
         }
 
-        public static void DisplayResults(QueryResult results, int severityThreshold)
+        public static void DisplayResults(QueryResult results, string query, int severityThreshold)
         {
-            Console.WriteLine("\n********** Query Result *******************");
-            Console.WriteLine($"Total Found Logs: {results.Count}");
-            Console.WriteLine($"Duplicates hidden: {results.DuplicateCount}");
-            foreach (var record in results.Logs)
-            {
-                DisplayRecord(record, severityThreshold);
-            }
-            Console.WriteLine("*****************************************");
-        }
+            var alerts = new List<string>();
 
-        private static void DisplayRecord(CsvLog record, int severityThreshold)
-        {
-            if (record.Fields.TryGetValue("severity", out var severityObj) &&
-                int.TryParse(severityObj?.ToString(), out int severity) &&
-                severity >= severityThreshold)
+            foreach (var log in results.Logs)
             {
-                Console.WriteLine("\n========== ALERT NOTIFICATION ==========");
-                Console.WriteLine($"Severity {severity} exceeded threshold!");
-                Console.WriteLine("========================================\n");
+                if (log.Fields.TryGetValue("severity", out var severityObj) &&
+                    int.TryParse(severityObj?.ToString(), out int severity) &&
+                    severity >= severityThreshold)
+                {
+                    alerts.Add($"Severity {severity} exceeded threshold for log id: {log.Id}!");
+                }
             }
 
-            var json = JsonSerializer.Serialize(record.Fields, new JsonSerializerOptions { WriteIndented = true });
-            Console.WriteLine(json);
+            var response = new JsonResponse
+            {
+                Query = query,
+                TotalLogs = results.Count,
+                DuplicateCount = results.DuplicateCount,
+                Logs = results.Logs.Select(log => log.Fields).ToList(),
+                Alerts = alerts
+            };
+
+            Console.WriteLine(JsonUtility.Serialize(response));
         }
     }
 }

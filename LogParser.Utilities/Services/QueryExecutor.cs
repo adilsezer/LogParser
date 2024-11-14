@@ -1,6 +1,5 @@
 ﻿using LogParser.Utilities.Data;
 using LogParser.Utilities.Models;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace LogParser.Utilities.Services
@@ -49,13 +48,13 @@ namespace LogParser.Utilities.Services
 
             if (missingColumns.Count != 0)
             {
-                throw new InvalidOperationException($"We couldn't find these wolumns: {string.Join(", ", missingColumns)}");
+                throw new InvalidOperationException($"Column not found: {string.Join(", ", missingColumns)}");
             }
 
             var matchingLogs = allData.Where(record => EvaluateConditions(record.Fields, queryParser)).ToList();
 
             var distinctLogs = matchingLogs
-                .GroupBy(log => JsonSerializer.Serialize(log.Fields))
+                .GroupBy(log => JsonUtility.Serialize(log.Fields))
                 .Select(group => group.First())
                 .ToList();
             var duplicateCount = matchingLogs.Count - distinctLogs.Count;
@@ -150,7 +149,7 @@ namespace LogParser.Utilities.Services
                 // Displaying all logs takes a lot of space, that's why we take 3
                 foreach (var record in logs.Take(3))
                 {
-                    var json = JsonSerializer.Serialize(record.Fields, new JsonSerializerOptions { WriteIndented = true });
+                    var json = JsonUtility.Serialize(record.Fields);
                     Console.WriteLine($"Id: {record.Id}, Json: {json}");
                 }
             }
