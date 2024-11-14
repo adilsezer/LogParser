@@ -35,18 +35,23 @@ namespace LogParser.ConsoleApp
         {
             while (true)
             {
-                Console.WriteLine("Enter your log query or type 'exit' to quit:");
+                Console.WriteLine("Enter your log query or type exit to quit:");
                 var query = Console.ReadLine();
 
                 if (string.IsNullOrWhiteSpace(query))
                 {
-                    Console.WriteLine("Query cannot be empty! Please provide a valid input.");
+                    var responseMessage = new JsonResponse
+                    {
+                        Query = string.Empty,
+                        Message = $"Query cannot be empty! Please provide a valid query."
+                    };
+                    Console.WriteLine(JsonUtility.Serialize(responseMessage));
                     continue;
                 }
 
                 if (query.Equals("exit", StringComparison.OrdinalIgnoreCase))
                 {
-                    Console.WriteLine("Exiting the application. Thank you!");
+                    Console.WriteLine("Exiting the app.");
                     break;
                 }
 
